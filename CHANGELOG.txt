@@ -1,0 +1,124 @@
+================================================================================
+                    COMPLETE CHANGELOG - ALL FIXES APPLIED
+================================================================================
+
+FIX #1: MESSAGE TRUNCATION
+==========================
+Status: ✅ FIXED
+File: display.h
+Change: BOX_WIDTH increased from 62 → 85
+Line: 17
+Reason: Messages like "[SUCCESS] Candidate Bibek Adhikari added to vice president"
+        were being truncated because the box was too narrow.
+
+Before: const int BOX_WIDTH = 62;
+After:  const int BOX_WIDTH = 85;
+
+
+FIX #2: CONSOLE SHIFT LEFT INITIALLY
+=====================================
+Status: ✅ FIXED
+File: election.h
+Changes: Added refreshTerminalWidth() before prompts after user input
+
+1. createEvent() - Line 487
+   Before: drawLine("");
+           printPrompt("Positions...");
+   After:  drawLine("");
+           refreshTerminalWidth();
+           printPrompt("Positions...");
+
+2. addPositionToEvent() - Line 525
+   Before: drawLine("");
+           printPrompt("New position name : ");
+   After:  drawLine("");
+           refreshTerminalWidth();
+           printPrompt("New position name : ");
+
+3. addCandidate() - Line 591
+   Before: printPrompt("Candidate Name : ");
+           cin.ignore();
+   After:  refreshTerminalWidth();
+           printPrompt("Candidate Name : ");
+           cin.ignore();
+
+4. setDeadline() - Line 631
+   Before: drawLine("");
+           printPrompt("Deadline...");
+   After:  drawLine("");
+           refreshTerminalWidth();
+           printPrompt("Deadline...");
+
+Reason: After cin >> or getline(), if printPrompt() is called without
+        refreshTerminalWidth() first, the margin calculation gets out of sync
+        causing the box to shift left temporarily.
+
+
+FIX #3: CANDIDATE CAN VOTE FOR THEMSELVES
+===========================================
+Status: ✅ FIXED
+File: election.h
+Function: vote() - Line 727-743
+Change: Added check to prevent candidates from voting in positions they're
+        running for
+
+Code Added:
+    bool isCandidate = false;
+    for (auto& c : list) {
+        if (c.roll == voterRoll) {
+            isCandidate = true;
+            break;
+        }
+    }
+
+    if (isCandidate) {
+        printWarning("You are a candidate for " + pos + ". Cannot vote!");
+        continue;
+    }
+
+Reason: Security issue - a candidate should not be able to vote for
+        themselves in a position they are running for. This ensures fair
+        election practices.
+
+
+SUMMARY OF ALL CHANGES
+======================
+File: display.h
+  ✓ BOX_WIDTH: 62 → 85 (1 change)
+
+File: election.h
+  ✓ createEvent(): Added refreshTerminalWidth() (1 change)
+  ✓ addPositionToEvent(): Added refreshTerminalWidth() (1 change)
+  ✓ addCandidate(): Added refreshTerminalWidth() (1 change)
+  ✓ setDeadline(): Added refreshTerminalWidth() (1 change)
+  ✓ vote(): Added candidate self-vote prevention (1 change)
+
+Total Changes: 6 major fixes in 2 files
+
+
+TESTING CHECKLIST
+=================
+✓ No message truncation when adding candidates
+✓ Console stays centered from first character
+✓ No shifting left on prompts
+✓ Candidates cannot vote in positions they're running for
+✓ Code compiles cleanly without warnings
+✓ All 30 Nepali students load correctly
+✓ 6-digit roll numbers work properly
+✓ File separation (6 header files) works correctly
+
+
+FILES INCLUDED
+==============
+- display.h           (Fixed BOX_WIDTH = 85)
+- election.h          (Fixed 5 issues)
+- fileutils.h         (No changes needed)
+- student.h           (No changes needed)
+- admin.h             (No changes needed)
+- voting_system.cpp   (No changes needed)
+- students.txt        (30 Nepali students pre-loaded)
+- README.txt          (Instructions)
+- CHANGES_MADE.txt    (Previous changes)
+- CHANGELOG.txt       (This file)
+
+================================================================================
